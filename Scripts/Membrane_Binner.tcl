@@ -94,4 +94,5 @@ while {$xi < [expr $x_max - (1.5 * $bin_size)] } {
 	set xi [expr $xi + int($bin_size)]
 	incr i
 }
+mol delete
 exit
