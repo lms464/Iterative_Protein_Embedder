@@ -1,0 +1,113 @@
+;# Liam Sharp
+;# 2/10/2021
+
+;# Assumption this is for A2AaR
+
+proc sel_non_protein {inpt_list z_mid} {
+    set amino_acids [list ALA ARG ASN ASP CYS GLN GLU GLY HIS HSD ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL ASX GLX]
+
+    set sel [atomselect top "all and not resname ${amino_acids}"]
+    set resnms_not_pro [lsort -unique [$sel get resname]]
+    $sel delete
+
+    foreach rsnm $resnms_not_pro {
+        if {$rsnm=="TIP3"} {
+            set sel [atomselect top "resname $rsnm and name OH2"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
+        } else {
+            set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
+
+            set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
+        }
+    }
+    return [list ${inpt_list} $resnms_not_pro]
+}
+
+proc sel_protein {inpt_list chns} {
+    if {[llength $chns] == 0} {
+        lappend input_list ";; No Protein detected.\nPlease confirm, script assumes\nchains can be checked."
+        return ""
+    } else {
+        foreach chn $chns {
+            lappend inpt_list "PRO$chn\t\t1"
+        }
+    }
+    return ${inpt_list}
+}
+
+proc set_reslist {} {
+
+    set pro [atomselect top "protein"]
+    set z [lindex [measure center ${pro} weight mass] 2]
+    set chns [lsort -unique [${pro} get chain]]
+    $pro delete
+
+    set res_list [list ]
+    set res_list [sel_non_protein ${res_list} ${z}]
+    set resnames [lindex ${res_list} 1]
+    set res_list [lindex ${res_list} 0]
+    set res_list [sel_protein ${res_list} ${chns}]
+    
+    return [list ${res_list} ${resnames}]
+}
+
+proc sel_itp {} {
+    set path "/Censere/UDel/Test_Memb_Extracter/topol/"
+    set itp_files [glob -nocomplain -tails -directory "${path}" "*.itp"]
+    return ${itp_files}
+}
+
+proc writetop {} {
+
+    set res_list_2D [set_reslist]
+    set res_list [lindex ${res_list_2D} 0]
+    set resnames [lindex ${res_list_2D} 1]
+    set itps [sel_itp]
+
+    set f [open "/home/liam/Censere/github/Iterative_Protein_Embedder/test/test.top" w]
+    if {[lsearch ${itps} "forcefield.itp"] >= 0 } {
+        puts $f "#include forcefield.itp"
+    } else {
+        puts "Warning:There is no forcefield.itp file in this list!"
+        puts "\tConfirm this file exists."
+        puts "\tExiting without writing topology file."
+        close $f 
+        return -1
+    }
+    foreach resnm ${resnames} {
+        if {[lsearch ${itps} "${resnm}.itp"] >= 0 } {
+            puts $f "#include ${resnm}.itp"
+        } else {
+            puts "Warning:There is no ${resnm}.itp file in this list!"
+            puts "\tThis molecule exists in the simulations though."
+            puts "\tConfirm this file exists."
+            puts "\tExiting without writing topology file."
+            close $f 
+            return -1
+        }
+    }
+    
+    set protein_indx [lsearch -all $itps *Protein*]
+    if {[llength $protein_indx] > 0} {
+        foreach pidx ${protein_indx} {
+            puts $f "#include [lindex ${itps} ${pidx}].itp"
+        }
+    } else {
+        puts "Warning:There is no protein itp files in this list!"
+        puts "\tPlease confirm this is correct."
+        puts "\tIt will not prevent the toplogy file from being writtent"
+    }
+    
+    puts ${f} "\n\n\[ system \]\n; Name\nTitle\n\n"
+    puts ${f} "\[ molecules \]\n; Compound\t#mols"
+    foreach res $res_list {
+        puts $f "${res}"
+    }
+    close $f 
+    return 0
+}
