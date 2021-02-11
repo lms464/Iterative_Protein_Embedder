@@ -1,3 +1,5 @@
+source make_top.tcl
+
 proc combine {pro_in p1 p2} {
 
     #!/usr/local/bin/vmd -dispdev text
@@ -77,6 +79,7 @@ proc combine {pro_in p1 p2} {
     # write full structure
     writepsf /Censere/UDel/Test_Memb_Extracter/memb_pro_files/protein_mem${p1}${p2}.psf
     writepdb /Censere/UDel/Test_Memb_Extracter/memb_pro_files/protein_mem${p1}${p2}.pdb
+    writetop
 
     # clean up
     file delete $temp.psf
