@@ -54,7 +54,7 @@ set y_min [lindex [lindex $memb_minmax 0] 1]
 
 set x_max [lindex [lindex $memb_minmax 1] 0]
 set y_max [lindex [lindex $memb_minmax 1] 1]
-mol delete 
+delete mol 
 
 set area_list [get_memb_area "DPPC" $memb_minmax]
 set A [lindex $area_list 0]
@@ -64,7 +64,7 @@ set A_lip [lindex $area_list 1]
 load_structure "protein_mem.pdb"
 set A_adj [get_memb_adjst_area "DPPC" $A_lip]
 set bin_list [get_pro_area $A $A_adj]
-mol delete 
+delete mol 
 
 set A_bin [lindex $bin_list 0]
 set bin_size [lindex $bin_list 1]
@@ -94,5 +94,5 @@ while {$xi < [expr $x_max - (1.5 * $bin_size)] } {
 	set xi [expr $xi + int($bin_size)]
 	incr i
 }
-mol delete
+delete mol
 exit
