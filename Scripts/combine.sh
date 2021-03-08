@@ -2,29 +2,9 @@
 
 ## TODO at the end of TCL scripts have a return -1 or 1
 ## bash reads the file for that value
-
-
-
-# returning from bash food for thought
-
-# #!/bin/bash
-
-# my_function () {
-#   echo "some result"
-#   return 55
-# }
-
-# my_function
-# echo $?
-
-
-
-# my_function () {
-#   func_result="some result"
-# }
-
-# my_function
-# echo $func_result
+## TODO for dealing with various membrane frames try:
+## having an input array or a file containing 
+## various membrane traj stored as pdb names
 
 
 ## global variables ####
@@ -43,24 +23,41 @@ date >> ${Err_Log}
 
 ### Functions #########
 
+## File Utility functions, build and move files
 make_embedded_folder () {
-	local ii=${i}
-	local jj=${j}
+
 	local result=0
-	if [ -d "${path}/prot_memb_${ii}${jj}" ] 
-	then
-	    echo "Directory ${path}/prot_memb_${ii}${jj} exists." 
+	if [ -d "${embd_dir}" ] 
+	    echo "Directory ${embd_dir} exists." 
 	    echo "Check to confirm if the directory is populated."
+	    echo "Re-printed in error log"
 	    result=${ERROR}
 	else
-	    mkdir ${path}/prot_memb_${ii}${jj}
+	    mkdir ${embd_dir}
 	    result=${ACCEPT}
 	fi
-	unset ii
-	unset jj
 	return result
 }
 
+get_toppar () {
+	# Where is ""
+	toppar=""
+	cp -r ${toppar} ${embd_dir}
+	# How do I catch this one...
+}
+
+get_default_pdbs () {
+	# get alligned protein.pdb/.psf
+	# get membrane.pdb/psf
+	# need to consider having various membranes
+
+	# Where is ""
+	def=""
+	cp -r ${def} ${embd_dir}
+}
+
+## Simulation Utility, manipulate membrane
+## make and move run files
 bin_memb_build_prot () {
 	# based off a refference build memb_prot.pdb
 	# predict number of bins
@@ -139,29 +136,31 @@ for i in `seq 0 4`;
 do
 	for j in `seq 0 4`;
 	do 
-		# error catching not working yet... see
-		# notes at top of script
-		gmx_pdb2gmx
-		if [ $? != ${ACCEPT} ]; then
-			echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
-			exit 1
-		fi
-
-		make_embedded_folder
+		embd_dir="${path}/prot_memb_${i}${j}"
+		
+		make_embedded_folder # TESTME
 		if [$? != ${ACCEPT}]; then
 	    	echo "Fatal Error: Directory ${path}/prot_memb_${ii}${jj} exists." >> ${Err_Log}
 	    	echo "    Check to confirm if the directory is populated." >> ${Err_Log}
 	    	exit 1
 		fi
-
+		
+		get_toppar # TESTME
+		get_default_pdbs # TESTME
+		
+		gmx_pdb2gmx
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
+			exit 1
+		fi
 		combine_tcl
 		if [ $? != ${ACCEPT} ]; then
-			echo "Error: combine_tcl failed at pro_${i}${j}.pdb" >> ${Err_Log}
+			echo "Error: combine_tcl failed at combining pro_${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
 		addCrystal
 		if [ $? != ${ACCEPT} ]; then
-			echo "Error: addCrystal failed at pro_${i}${j}.pdb" >> ${Err_Log}
+			echo "Error: addCrystal failed at protein_mem_${i}${j}.pdb" >> ${Err_Log}
 			exit 1
 		fi
 	done
