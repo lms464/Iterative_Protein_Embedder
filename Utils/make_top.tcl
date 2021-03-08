@@ -2,6 +2,9 @@
 ;# 2/10/2021
 
 ;# Assumption this is for A2AaR
+proc load_structure {inpt} {
+     mol new "${inpt}" type {pdb} first 0 last -1 step 1 waitfor 1
+}
 
 proc sel_non_protein {inpt_list z_mid} {
     set amino_acids [list ALA ARG ASN ASP CYS GLN GLU GLY HIS HSD ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL ASX GLX]
@@ -20,7 +23,7 @@ proc sel_non_protein {inpt_list z_mid} {
             lappend inpt_list "$rsnm\t\t[$sel num]"
             $sel delete
 
-            set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
+            set sel [atomselect top "resname $rsnm and name P and z < ${z_mid}"]
             lappend inpt_list "$rsnm\t\t[$sel num]"
             $sel delete
         }
@@ -43,9 +46,12 @@ proc sel_protein {inpt_list chns} {
 proc set_reslist {} {
 
     set pro [atomselect top "protein"]
-    set z [lindex [measure center ${pro} weight mass] 2]
     set chns [lsort -unique [${pro} get chain]]
     $pro delete
+
+    set lip [atomselect top "lipids and name P"]
+    set z [lindex [measure center ${lip} weight mass] 2]
+
 
     set res_list [list ]
     set res_list [sel_non_protein ${res_list} ${z}]
@@ -71,7 +77,7 @@ proc writetop {} {
 
     set f [open "/home/liam/Censere/github/Iterative_Protein_Embedder/test/test.top" w]
     if {[lsearch ${itps} "forcefield.itp"] >= 0 } {
-        puts $f "#include forcefield.itp"
+        puts $f "#include \"forcefield.itp\""
     } else {
         puts "Warning:There is no forcefield.itp file in this list!"
         puts "\tConfirm this file exists."
@@ -81,7 +87,7 @@ proc writetop {} {
     }
     foreach resnm ${resnames} {
         if {[lsearch ${itps} "${resnm}.itp"] >= 0 } {
-            puts $f "#include ${resnm}.itp"
+            puts $f "#include \"${resnm}.itp\""
         } else {
             puts "Warning:There is no ${resnm}.itp file in this list!"
             puts "\tThis molecule exists in the simulations though."
@@ -109,5 +115,17 @@ proc writetop {} {
         puts $f "${res}"
     }
     close $f 
-    return 0
+    return 1
 }
+
+
+# if { $argc < 1 } {
+#     puts "Error: Impropper argument input number"
+#     puts "\tPlease try again."
+# } else {     
+#     puts "[lindex ${argv} 0]"  
+#     #set fin [write_pdb [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
+#     load_structure [lindex ${argv} 0]
+#     writetop
+# }
+# exit
