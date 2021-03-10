@@ -4,19 +4,21 @@ if { $argc < 2 } {
     puts "\tPlease try again."
     exit 0
 } else {   
+	set UTILS "/Censere/github/Iterative_Protein_Embedder/Utils"
 
 	if { [lindex ${argv} 0] == "c" } {
-		source ~/Censere/github/Iterative_Protein_Embedder/Utils/combine.tcl
+		source ${UTILS}/combine.tcl
 		puts "Combine Prot and Memb"
 		set fin [combine [lindex ${argv} 1] [lindex $argv 2] [lindex $argv 3]]
 
 	} elseif { [lindex ${argv} 0] == "t"} {
-		source ~/Censere/github/Iterative_Protein_Embedder/Scripts/combine_no_psf.tcl
+		source ${UTILS}/make_top.tcl
 		puts "Build .top file"
 		set fin [writetop [lindex ${argv} 1]]
 
 	} else {
 		puts "inproper selction"
+		exit 1
 	}
 	#puts "[lindex ${argv} 0]"  
     #set fin [write_pdb [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]

@@ -19,7 +19,7 @@ ERROR=1
 path="/Censere/github/Iterative_Protein_Embedder/test"
 path_def="/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
 path_top="/home/liam/Censere/github/Iterative_Protein_Embedder/test/toppar"
-
+UTILS="/Censere/github/Iterative_Protein_Embedder/Utils"
 ## File intiation for logs and errors
 LOG="test.log"
 Err_Log="test.err"
@@ -72,7 +72,7 @@ bin_memb_build_prot () {
 	# predict number of bins
 	# write pdb's of prot for each bin
 
-	echo "vmd -dispdev text -e Membrane_Binner.tcl" >> ${LOG}
+	vmd -dispdev text -e Membrane_Binner.tcl >> ${LOG}
 	return ${ACCEPT}
 }
 
@@ -85,10 +85,10 @@ combine_tcl () {
 	local jj=${j}
 	if [ "${ii}" = "None" ] || [ "${jj}" = "None" ]
 	then
-		echo "vmd -dispdev text -e TCL_InptArg.tcl -args #{path_def}/protein_aligned.pdb ${ii} ${jj}" >> ${LOG}
+		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${path_def}/protein_aligned.pdb ${ii} ${jj} >> ${LOG}
 	else
 		pro="${path}/pro_${ii}${jj}.pdb"
-		echo "vmd -dispdev text -e TCL_InptArg.tcl -args ${pro} ${ii} ${jj}" >> ${LOG}
+		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${pro} ${ii} ${jj} >> ${LOG}
  	fi
  	unset ii
  	unset jj
@@ -138,13 +138,15 @@ if [ $? != ${ACCEPT} ]; then
 	echo "Could not merge initial protein and membrane. Exiting" >> ${Err_Log}
 	exit 1
 fi
-exit 1
+
 bin_memb_build_prot
 
 if [ $? != ${ACCEPT} ]; then
 	echo "Could not bin membrane. Exiting" >> ${Err_Log}
 	exit 1
 fi
+
+exit 0
 
 ## Build the systems en-mass
 echo "Starting Loop"
