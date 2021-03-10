@@ -16,6 +16,8 @@ proc combine {pro_in p1 p2} {
 
     # need psfgen module and topology
 
+    set path_def "/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
+
     if {${p1} == "None" || ${p2} == "None"} {
         set p1 "" 
         set p2 ""
@@ -29,9 +31,9 @@ proc combine {pro_in p1 p2} {
 
     # load structures
     resetpsf
-    readpsf /Censere/UDel/Test_Memb_Extracter/membrane.psf
-    coordpdb /Censere/UDel/Test_Memb_Extracter/membrane.pdb
-    readpsf /Censere/UDel/Test_Memb_Extracter/protein.psf
+    readpsf ${path_def}/membrane.psf
+    coordpdb ${path_def}/membrane.pdb
+    readpsf ${path_def}/protein.psf
     coordpdb $pro_in
 
     # can delete some protein segments; list them in brackets on next line
@@ -84,12 +86,12 @@ proc combine {pro_in p1 p2} {
     }
 
     # write full structure
-    writepsf /Censere/UDel/Test_Memb_Extracter/memb_pro_files/protein_mem${p1}${p2}.psf
-    writepdb /Censere/UDel/Test_Memb_Extracter/memb_pro_files/protein_mem${p1}${p2}.pdb
+    writepsf ${path_def}/protein_mem${p1}${p2}.psf
+    writepdb ${path_def}/protein_mem${p1}${p2}.pdb
     # clean up
     file delete $temp.psf
     file delete $temp.pdb
     # non-interactive script
     ;#quit
-    return 1
+    return 0
 }

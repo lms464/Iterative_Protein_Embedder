@@ -8,13 +8,24 @@
 
 
 ## global variables ####
-ACCEPT=1
-ERROR=-1
-path=""
+
+## I did not know bash returned 0 if it passes!
+## Accept and error are changed to reflect that
+ACCEPT=0
+ERROR=1
+
+## Paths for existing folders and files
+## Required to build systems
+path="/Censere/github/Iterative_Protein_Embedder/test"
+path_def="/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
+path_top="/home/liam/Censere/github/Iterative_Protein_Embedder/test/toppar"
+
+## File intiation for logs and errors
 LOG="test.log"
 Err_Log="test.err"
 touch test.log
 touch test.err
+
 # date the log files
 date >> ${LOG}
 date >> ${Err_Log}
@@ -28,6 +39,7 @@ make_embedded_folder () {
 
 	local result=0
 	if [ -d "${embd_dir}" ] 
+	then
 	    echo "Directory ${embd_dir} exists." 
 	    echo "Check to confirm if the directory is populated."
 	    echo "Re-printed in error log"
@@ -36,14 +48,13 @@ make_embedded_folder () {
 	    mkdir ${embd_dir}
 	    result=${ACCEPT}
 	fi
-	return result
+	echo ${result}
+	return ${result}
 }
 
 get_toppar () {
 	# Where is ""
-	toppar=""
-	cp -r ${toppar} ${embd_dir}
-	# How do I catch this one...
+	cp -r ${path_top} ${embd_dir}
 }
 
 get_default_pdbs () {
@@ -51,9 +62,7 @@ get_default_pdbs () {
 	# get membrane.pdb/psf
 	# need to consider having various membranes
 
-	# Where is ""
-	def=""
-	cp -r ${def} ${embd_dir}
+	cp -r ${path_def} ${embd_dir}
 }
 
 ## Simulation Utility, manipulate membrane
@@ -76,10 +85,10 @@ combine_tcl () {
 	local jj=${j}
 	if [ "${ii}" = "None" ] || [ "${jj}" = "None" ]
 	then
-		echo "vmd -dispdev text -e combine.tcl "protein_aligned.pdb" ${ii} ${jj}" >> ${LOG}
+		echo "vmd -dispdev text -e TCL_InptArg.tcl -args #{path_def}/protein_aligned.pdb ${ii} ${jj}" >> ${LOG}
 	else
 		pro="${path}/pro_${ii}${jj}.pdb"
-		echo "vmd -dispdev text -e combine.tcl ${pro} ${ii} ${jj}" >> ${LOG}
+		echo "vmd -dispdev text -e TCL_InptArg.tcl -args ${pro} ${ii} ${jj}" >> ${LOG}
  	fi
  	unset ii
  	unset jj
@@ -118,36 +127,51 @@ addCrystal () {
 ########################
 
 #### TESTING ####
+
+## This block should initialize
+## The reference combied memb-prot
 i="None"
 j="None"
 combine_tcl
+
+if [ $? != ${ACCEPT} ]; then
+	echo "Could not merge initial protein and membrane. Exiting" >> ${Err_Log}
+	exit 1
+fi
+exit 1
 bin_memb_build_prot
-result=$?
-if [ $result != ${ACCEPT} ]; then
+
+if [ $? != ${ACCEPT} ]; then
 	echo "Could not bin membrane. Exiting" >> ${Err_Log}
 	exit 1
 fi
 
-
+## Build the systems en-mass
 echo "Starting Loop"
 echo ""
 echo ""
-for i in `seq 0 4`;
+for i in `seq 0 1`;
 do
-	for j in `seq 0 4`;
+	for j in `seq 0 1`;
 	do 
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
-		make_embedded_folder # TESTME
-		if [$? != ${ACCEPT}]; then
+		make_embedded_folder 
+		if [ $? != ${ACCEPT} ]; then
 	    	echo "Fatal Error: Directory ${path}/prot_memb_${ii}${jj} exists." >> ${Err_Log}
 	    	echo "    Check to confirm if the directory is populated." >> ${Err_Log}
 	    	exit 1
 		fi
-		
-		get_toppar # TESTME
-		get_default_pdbs # TESTME
-		
+		get_toppar 
+		if [ $? != ${Accept} ]; then
+			echo "Error: Did not move the topology directory" >> ${Err_Log}
+			exit 1
+		fi
+		get_default_pdbs 
+		if [ $? != ${Accept} ]; then
+			echo "Error: Did not move the initial pdbs" >> ${Err_Log}
+			exit 1
+		fi
 		gmx_pdb2gmx
 		if [ $? != ${ACCEPT} ]; then
 			echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}

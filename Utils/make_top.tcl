@@ -68,7 +68,9 @@ proc sel_itp {} {
     return ${itp_files}
 }
 
-proc writetop {} {
+proc writetop {inpt_pdb} {
+
+    load_structure ${inpt_pdb}
 
     set res_list_2D [set_reslist]
     set res_list [lindex ${res_list_2D} 0]
@@ -115,7 +117,7 @@ proc writetop {} {
         puts $f "${res}"
     }
     close $f 
-    return 1
+    return 0
 }
 
 

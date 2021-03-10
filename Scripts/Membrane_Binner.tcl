@@ -67,9 +67,10 @@ proc get_pro_area {A A_adj} {
 	set num_bin [expr int(1.0*$A/$A_bin)]
 	return [list $A_bin $bin_size $num_bin]
 }
-
+set path_def "/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
+set path_pdb  "/home/liam/Censere/github/Iterative_Protein_Embedder/test/pdb_files"
 # Reference Memb
-load_structure "./membrane.pdb"
+load_structure "${path_def}/membrane.pdb"
 puts "Loaded membrane file"
 set memb_minmax [get_min_xy "DPPC"]
 set x_min [lindex [lindex $memb_minmax 0] 0]
@@ -83,7 +84,7 @@ set A [lindex $area_list 0]
 set A_lip [lindex $area_list 1]
 
 # Memb with Protein
-load_structure "protein_mem.pdb"
+load_structure "${path_def}/protein_mem.pdb"
 puts "Loaded initial protein in membrane file"
 
 set A_adj [get_memb_adjst_area "DPPC" $A_lip]
@@ -104,7 +105,7 @@ set yi [expr $y_min + 1.0 * $bin_size]
 
 set i 0
 set j 0
-load_structure "./protein_aligned.pdb"
+load_structure "${path_def}/protein_aligned.pdb"
 puts "Loaded protein file."
 puts "Checking Z axis alignment"
 align_prot_memb
@@ -120,7 +121,7 @@ while {$xi < [expr $x_max - (5.0 * $bin_size)] } {
 		}
 
 		$pro moveby [list $xi $yi 0]
-		$pro writepdb "./pdb_files/pro_${i}${j}.pdb"
+		$pro writepdb "${path_pdb}/pro_${i}${j}.pdb"
 		set xin [expr -1.0*$xi]
 		set yin [expr -1.0*$yi]
 		$pro moveby [list $xin $yin 0]
@@ -140,4 +141,4 @@ while {$xi < [expr $x_max - (5.0 * $bin_size)] } {
 $pro delete
 #mol delete 0
 #mol delete top
-#exit
+exit 0

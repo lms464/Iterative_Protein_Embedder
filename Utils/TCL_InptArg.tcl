@@ -1,16 +1,30 @@
-;#source ~/Censere/github/Iterative_Protein_Embedder/Scripts/combine_no_psf.tcl
-source ~/Censere/github/Iterative_Protein_Embedder/Utils/combine.tcl
 
 if { $argc < 2 } {
     puts "Error: Impropper argument input number"
     puts "\tPlease try again."
-} else {     
-	puts "[lindex ${argv} 0]"  
+    exit 0
+} else {   
+
+	if { [lindex ${argv} 0] == "c" } {
+		source ~/Censere/github/Iterative_Protein_Embedder/Utils/combine.tcl
+		puts "Combine Prot and Memb"
+		set fin [combine [lindex ${argv} 1] [lindex $argv 2] [lindex $argv 3]]
+
+	} elseif { [lindex ${argv} 0] == "t"} {
+		source ~/Censere/github/Iterative_Protein_Embedder/Scripts/combine_no_psf.tcl
+		puts "Build .top file"
+		set fin [writetop [lindex ${argv} 1]]
+
+	} else {
+		puts "inproper selction"
+	}
+	#puts "[lindex ${argv} 0]"  
     #set fin [write_pdb [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
-    set fin [combine [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
+    #set fin [combine [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
 }
-if {${fin} == 1} {
-	exit
+if {${fin} == 0} {
+	exit 0
 } else {
 	puts "Error: see statements above"
+	exit 1
 }
