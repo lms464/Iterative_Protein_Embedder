@@ -19,16 +19,18 @@ ERROR=1
 path="/Censere/github/Iterative_Protein_Embedder/test"
 path_def="/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
 path_top="/home/liam/Censere/github/Iterative_Protein_Embedder/test/toppar"
+path_pdb="/home/liam/Censere/github/Iterative_Protein_Embedder/test/pdb_files"
 UTILS="/Censere/github/Iterative_Protein_Embedder/Utils"
 ## File intiation for logs and errors
-LOG="test.log"
-Err_Log="test.err"
-touch test.log
-touch test.err
+date=$(date '+%Y-%m-%d_%H.%M.%S')
+LOG=${date}.log
+Err_Log=${date}.err
+touch ${LOG}
+touch ${Err_Log}
 
 # date the log files
-date >> ${LOG}
-date >> ${Err_Log}
+# date >> ${LOG}
+# date >> ${Err_Log}
 
 #######################
 
@@ -45,7 +47,7 @@ make_embedded_folder () {
 	    echo "Re-printed in error log"
 	    result=${ERROR}
 	else
-	    mkdir ${embd_dir}
+	    mkdir ${embd_dir} #>> ${LOG} 
 	    result=${ACCEPT}
 	fi
 	echo ${result}
@@ -54,7 +56,7 @@ make_embedded_folder () {
 
 get_toppar () {
 	# Where is ""
-	cp -r ${path_top} ${embd_dir}
+	cp -r ${path_top} ${embd_dir} >> ${LOG}
 }
 
 get_default_pdbs () {
@@ -62,7 +64,7 @@ get_default_pdbs () {
 	# get membrane.pdb/psf
 	# need to consider having various membranes
 
-	cp -r ${path_def} ${embd_dir}
+	cp -r ${path_def} ${embd_dir} >> ${LOG} 
 }
 
 ## Simulation Utility, manipulate membrane
@@ -87,7 +89,7 @@ combine_tcl () {
 	then
 		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${path_def}/protein_aligned.pdb ${ii} ${jj} >> ${LOG}
 	else
-		pro="${path}/pro_${ii}${jj}.pdb"
+		pro=${embd_dir}/pro_${ii}${jj}.pdb
 		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${pro} ${ii} ${jj} >> ${LOG}
  	fi
  	unset ii
@@ -102,8 +104,8 @@ gmx_pdb2gmx () {
 
 	local ii=${i}
 	local jj=${j}
-	pro="${path}/pro_${ii}${jj}.pdb"
-	echo "gmx pdb2gmx -f ${pro} < ../Utils/ff_wat.dat" >> ${LOG}
+	cp ${path_pdb}/pro_${ii}${jj}.pdb ${embd_dir}
+	gmx pdb2gmx -f ${embd_dir}/pro_${ii}${jj}.pdb -i ${embd_dir}/toppar/ -o ${embd_dir}/toppar/prot.pdb -p ${embd_dir}/toppar/toppar.top -ignh < ../Utils/ff_wat.dat >> ${LOG}
 	unset ii
  	unset jj
 	return ${ACCEPT} 
@@ -132,29 +134,37 @@ addCrystal () {
 ## The reference combied memb-prot
 i="None"
 j="None"
-combine_tcl
 
+echo "Initializing files" >> ${LOG}
+echo "Constructing reference combined protein membrane pdb and psf" >> ${LOG}
+echo "" >> ${LOG}
+echo "" >> ${LOG}
+echo "" >> ${LOG}
+
+combine_tcl
 if [ $? != ${ACCEPT} ]; then
 	echo "Could not merge initial protein and membrane. Exiting" >> ${Err_Log}
 	exit 1
 fi
 
-bin_memb_build_prot
+echo "Predicting number of membranes and building moved proteins" >> ${LOG}
+echo "" >> ${LOG}
+echo "" >> ${LOG}
+echo "" >> ${LOG}
 
+bin_memb_build_prot
 if [ $? != ${ACCEPT} ]; then
 	echo "Could not bin membrane. Exiting" >> ${Err_Log}
 	exit 1
 fi
 
-exit 0
-
 ## Build the systems en-mass
 echo "Starting Loop"
 echo ""
 echo ""
-for i in `seq 0 1`;
+for i in `seq 0 0`;
 do
-	for j in `seq 0 1`;
+	for j in `seq 0 0`;
 	do 
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
@@ -165,12 +175,12 @@ do
 	    	exit 1
 		fi
 		get_toppar 
-		if [ $? != ${Accept} ]; then
+		if [ $? != ${ACCEPT} ]; then
 			echo "Error: Did not move the topology directory" >> ${Err_Log}
 			exit 1
 		fi
 		get_default_pdbs 
-		if [ $? != ${Accept} ]; then
+		if [ $? != ${ACCEPT} ]; then
 			echo "Error: Did not move the initial pdbs" >> ${Err_Log}
 			exit 1
 		fi
@@ -184,11 +194,11 @@ do
 			echo "Error: combine_tcl failed at combining pro_${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
-		addCrystal
-		if [ $? != ${ACCEPT} ]; then
-			echo "Error: addCrystal failed at protein_mem_${i}${j}.pdb" >> ${Err_Log}
-			exit 1
-		fi
+		# addCrystal
+		# if [ $? != ${ACCEPT} ]; then
+		# 	echo "Error: addCrystal failed at protein_mem_${i}${j}.pdb" >> ${Err_Log}
+		# 	exit 1
+		# fi
 	done
 done
 ################

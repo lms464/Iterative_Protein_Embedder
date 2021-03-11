@@ -16,12 +16,21 @@ proc combine {pro_in p1 p2} {
 
     # need psfgen module and topology
 
-    set path_def "/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
+    set path_def "" 
 
     if {${p1} == "None" || ${p2} == "None"} {
         set p1 "" 
         set p2 ""
+        set path_def "/Censere/github/Iterative_Protein_Embedder/test/def"
+    } else {
+        set path_def "/Censere/github/Iterative_Protein_Embedder/test/prot_memb_${p1}${p2}/def"
     }
+
+    puts ""
+    puts ""
+    puts ${path_def}
+    puts ""
+    puts ""
 
     package require psfgen
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/top_all36_prot.rtf
@@ -31,8 +40,10 @@ proc combine {pro_in p1 p2} {
 
     # load structures
     resetpsf
+
     readpsf ${path_def}/membrane.psf
     coordpdb ${path_def}/membrane.pdb
+
     readpsf ${path_def}/protein.psf
     coordpdb $pro_in
 
@@ -43,12 +54,12 @@ proc combine {pro_in p1 p2} {
     }
 
     # write temporary structure
-    set temp "temp"
-    writepsf /Censere/UDel/Test_Memb_Extracter/$temp.psf
-    writepdb /Censere/UDel/Test_Memb_Extracter/$temp.pdb
+    set temp "${path_def}/temp"
+    writepsf ${temp}.psf
+    writepdb ${temp}.pdb
 
     # reload full structure (do NOT resetpsf!)
-    mol load psf /Censere/UDel/Test_Memb_Extracter/$temp.psf pdb /Censere/UDel/Test_Memb_Extracter/$temp.pdb
+    mol load psf ${temp}.psf pdb ${temp}.pdb
 
     # select and delete lipids that overlap protein:
     # any atom to any atom distance under 0.8A
@@ -85,9 +96,15 @@ proc combine {pro_in p1 p2} {
       }
     }
 
+    if { ${p1} != "" || ${p2} != "" } {
+        set path_def "/Censere/github/Iterative_Protein_Embedder/test/prot_memb_${p1}${p2}"
+    }
+
     # write full structure
     writepsf ${path_def}/protein_mem${p1}${p2}.psf
+    ;#if {[file exists ${path_def}/membrane.psf ] == 0} {exit 0}
     writepdb ${path_def}/protein_mem${p1}${p2}.pdb
+    ;#if {[file exists ${path_def}/membrane.pdb ] == 0} {exit 0}
     # clean up
     file delete $temp.psf
     file delete $temp.pdb
