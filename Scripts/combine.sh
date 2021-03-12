@@ -16,10 +16,12 @@ ERROR=1
 
 ## Paths for existing folders and files
 ## Required to build systems
+SCRIPTS="/home/liam/Censere/github/Iterative_Protein_Embedder/Scripts"
 path="/Censere/github/Iterative_Protein_Embedder/test"
 path_def="/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
 path_top="/home/liam/Censere/github/Iterative_Protein_Embedder/test/toppar"
 path_pdb="/home/liam/Censere/github/Iterative_Protein_Embedder/test/pdb_files"
+path_mdp="/home/liam/Censere/github/Iterative_Protein_Embedder/test/MDP"
 UTILS="/Censere/github/Iterative_Protein_Embedder/Utils"
 ## File intiation for logs and errors
 date=$(date '+%Y-%m-%d_%H.%M.%S')
@@ -57,6 +59,11 @@ make_embedded_folder () {
 get_toppar () {
 	# Where is ""
 	cp -r ${path_top} ${embd_dir} >> ${LOG}
+}
+
+get_mdb () {
+	cp -r ${path_mdp} ${embd_dir}
+	cp ${embd_dir}/MDP/*.bash ${embd_dir}
 }
 
 get_default_pdbs () {
@@ -117,11 +124,24 @@ addCrystal () {
 	# back in
 	local ii=${i}
 	local jj=${j}
-	pro="${path}/pro_${ii}${jj}.pdb"
-	echo "python addCrystal.py -i ${pro} -cryst 0.00 0.00 0.00 90.00 90.00 90.00" >> ${LOG}
+	#cp ${UTILS}/addCrystPdb.py ${embd_dir}
+	#cd ${embd_dir}
+	pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
+	python ${UTILS}/addCrystPdb.py -i ${pro} -cryst ${embd_dir}/def/input.config.dat >> ${LOG}
+	#cd ${SCRIPTS}
 	# Ohhhgod right this
 	# I don't have a plan here yet...
 
+	unset ii
+ 	unset jj
+ 	return ${ACCEPT} 
+}
+
+build_top () {
+	local ii=${i}
+	local jj=${j}
+	pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
+	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args t ${pro} ${ii} ${jj}>> ${LOG}
 	unset ii
  	unset jj
  	return ${ACCEPT} 
@@ -158,10 +178,16 @@ if [ $? != ${ACCEPT} ]; then
 	exit 1
 fi
 
+## Determine the number of protein
+## placemnt pdbs to iterate through
+## *assumes sqrt-able number*
+nfiles=$(ls ${path_pdb} | wc -l)
+ij=$(echo "sqrt($nfiles)-1" | bc)
+
 ## Build the systems en-mass
-echo "Starting Loop"
-echo ""
-echo ""
+echo "Starting Loop" >> ${LOG}
+echo "" >> ${LOG}
+echo "" >> ${LOG}
 for i in `seq 0 0`;
 do
 	for j in `seq 0 0`;
@@ -194,11 +220,19 @@ do
 			echo "Error: combine_tcl failed at combining pro_${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
-		# addCrystal
-		# if [ $? != ${ACCEPT} ]; then
-		# 	echo "Error: addCrystal failed at protein_mem_${i}${j}.pdb" >> ${Err_Log}
-		# 	exit 1
-		# fi
+		addCrystal
+		#TODO move a addCrystal.py to each file.. might need to cd into the file
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: addCrystal failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+			exit 1
+		fi
+		build_top
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: build_top failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+			exit 1
+		fi
+		get_mdb
+
 	done
 done
 ################

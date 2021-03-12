@@ -14,7 +14,7 @@ if { $argc < 2 } {
 	} elseif { [lindex ${argv} 0] == "t"} {
 		source ${UTILS}/make_top.tcl
 		puts "Build .top file"
-		set fin [writetop [lindex ${argv} 1]]
+		set fin [writetop [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
 
 	} else {
 		puts "inproper selction"

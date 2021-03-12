@@ -37,7 +37,7 @@ proc sel_protein {inpt_list chns} {
         return ""
     } else {
         foreach chn $chns {
-            lappend inpt_list "PRO$chn\t\t1"
+            lappend inpt_list "Protein_chain_$chn\t\t1"
         }
     }
     return ${inpt_list}
@@ -62,24 +62,24 @@ proc set_reslist {} {
     return [list ${res_list} ${resnames}]
 }
 
-proc sel_itp {} {
-    set path "/Censere/UDel/Test_Memb_Extracter/topol/"
+proc sel_itp {p1 p2} {
+    set path "~/Censere/github/Iterative_Protein_Embedder/test/prot_memb_${p1}${p2}/toppar"
     set itp_files [glob -nocomplain -tails -directory "${path}" "*.itp"]
     return ${itp_files}
 }
 
-proc writetop {inpt_pdb} {
+proc writetop {inpt_pdb p1 p2} {
 
     load_structure ${inpt_pdb}
 
     set res_list_2D [set_reslist]
     set res_list [lindex ${res_list_2D} 0]
     set resnames [lindex ${res_list_2D} 1]
-    set itps [sel_itp]
+    set itps [sel_itp ${p1} ${p2}]
 
-    set f [open "/home/liam/Censere/github/Iterative_Protein_Embedder/test/test.top" w]
+    set f [open "/home/liam/Censere/github/Iterative_Protein_Embedder/test/prot_memb_${p1}${p2}/topol.top" w]
     if {[lsearch ${itps} "forcefield.itp"] >= 0 } {
-        puts $f "#include \"forcefield.itp\""
+        puts $f "#include \"toppar/forcefield.itp\""
     } else {
         puts "Warning:There is no forcefield.itp file in this list!"
         puts "\tConfirm this file exists."
@@ -89,7 +89,7 @@ proc writetop {inpt_pdb} {
     }
     foreach resnm ${resnames} {
         if {[lsearch ${itps} "${resnm}.itp"] >= 0 } {
-            puts $f "#include \"${resnm}.itp\""
+            puts $f "#include \"toppar/${resnm}.itp\""
         } else {
             puts "Warning:There is no ${resnm}.itp file in this list!"
             puts "\tThis molecule exists in the simulations though."
@@ -103,7 +103,7 @@ proc writetop {inpt_pdb} {
     set protein_indx [lsearch -all $itps *Protein*]
     if {[llength $protein_indx] > 0} {
         foreach pidx ${protein_indx} {
-            puts $f "#include [lindex ${itps} ${pidx}].itp"
+            puts $f "#include \"toppar/[lindex ${itps} ${pidx}]\""
         }
     } else {
         puts "Warning:There is no protein itp files in this list!"
