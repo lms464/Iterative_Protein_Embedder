@@ -36,6 +36,7 @@ proc combine {pro_in p1 p2} {
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/top_all36_prot.rtf
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/top_all36_lipid.rtf
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/toppar_water_ions_namd.str
+    topology /Censere/UDel/ZM_inputs/ZM-wH-for-psfgen-NEW.rtf
     ;#top_all27_prot_lipid.inp
 
     # load structures
@@ -64,11 +65,11 @@ proc combine {pro_in p1 p2} {
     # select and delete lipids that overlap protein:
     # any atom to any atom distance under 0.8A
     # (alternative: heavy atom to heavy atom distance under 1.3A)
-    set sellip [atomselect top "resname DPPC"]
+    set sellip [atomselect top "lipids or water"]
     set lseglist [lsort -unique [$sellip get segid]]
     foreach lseg $lseglist {
       # find lipid backbone atoms
-      set selover [atomselect top "segid $lseg and within 0.8 of protein"]
+      set selover [atomselect top "segid $lseg and within 0.8 of (protein or resname ZMA SOD)"]
       # delete these residues
       set resover [lsort -unique [$selover get resid]]
       foreach res $resover {

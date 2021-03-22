@@ -109,7 +109,7 @@ load_structure "${path_def}/protein_aligned.pdb"
 puts "Loaded protein file."
 puts "Checking Z axis alignment"
 align_prot_memb
-set pro [atomselect top "protein"]
+set pro [atomselect top "all"]
 
 while {$xi < [expr $x_max - (5.0 * $bin_size)] } {
 	while {$yi < [expr $y_max - (5.0* $bin_size)]} {

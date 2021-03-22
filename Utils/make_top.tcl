@@ -18,6 +18,18 @@ proc sel_non_protein {inpt_list z_mid} {
             set sel [atomselect top "resname $rsnm and name OH2"]
             lappend inpt_list "$rsnm\t\t[$sel num]"
             $sel delete
+        } elseif {${rsnm}=="ZMA"} {
+            set sel [atomselect top "resname $rsnm and name N10"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
+        } elseif {${rsnm}=="SOD"} {
+            set sel [atomselect top "resname $rsnm"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
+        } elseif {${rsnm}=="CLA"} {
+            set sel [atomselect top "resname $rsnm"]
+            lappend inpt_list "$rsnm\t\t[$sel num]"
+            $sel delete
         } else {
             set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
             lappend inpt_list "$rsnm\t\t[$sel num]"
@@ -37,7 +49,7 @@ proc sel_protein {inpt_list chns} {
         return ""
     } else {
         foreach chn $chns {
-            lappend inpt_list "Protein_chain_$chn\t\t1"
+            lappend inpt_list "PRO${chn}\t\t1"
         }
     }
     return ${inpt_list}
@@ -47,6 +59,9 @@ proc set_reslist {} {
 
     set pro [atomselect top "protein"]
     set chns [lsort -unique [${pro} get chain]]
+    if {${chns} == "X" || ${chns} == "P"} {
+        set chns "A"
+    }
     $pro delete
 
     set lip [atomselect top "lipids and name P"]
@@ -100,7 +115,7 @@ proc writetop {inpt_pdb p1 p2} {
         }
     }
     
-    set protein_indx [lsearch -all $itps *Protein*]
+    set protein_indx [lsearch -all $itps *PRO*]
     if {[llength $protein_indx] > 0} {
         foreach pidx ${protein_indx} {
             puts $f "#include \"toppar/[lindex ${itps} ${pidx}]\""
@@ -113,7 +128,7 @@ proc writetop {inpt_pdb p1 p2} {
     
     puts ${f} "\n\n\[ system \]\n; Name\nTitle\n\n"
     puts ${f} "\[ molecules \]\n; Compound\t#mols"
-    foreach res $res_list {
+    foreach res [lsort -dictionary $res_list] {
         puts $f "${res}"
     }
     close $f 

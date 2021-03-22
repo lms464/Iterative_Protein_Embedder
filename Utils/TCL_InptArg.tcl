@@ -15,6 +15,9 @@ if { $argc < 2 } {
 		source ${UTILS}/make_top.tcl
 		puts "Build .top file"
 		set fin [writetop [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
+	} elseif { [lindex ${argv} 0] == "i" } {
+		source ${UTILS}/ionize.tcl
+		set fin [call_autoionize [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
 
 	} else {
 		puts "inproper selction"

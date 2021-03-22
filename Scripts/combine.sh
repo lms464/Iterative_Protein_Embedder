@@ -70,8 +70,12 @@ get_default_pdbs () {
 	# get alligned protein.pdb/.psf
 	# get membrane.pdb/psf
 	# need to consider having various membranes
-
+	local ii=${i}
+	local jj=${j}
 	cp -r ${path_def} ${embd_dir} >> ${LOG} 
+	cp ${path_pdb}/pro_${ii}${jj}.pdb ${embd_dir} >> ${LOG}
+	unset ii
+	unset jj
 }
 
 ## Simulation Utility, manipulate membrane
@@ -112,7 +116,9 @@ gmx_pdb2gmx () {
 	local ii=${i}
 	local jj=${j}
 	cp ${path_pdb}/pro_${ii}${jj}.pdb ${embd_dir}
-	gmx pdb2gmx -f ${embd_dir}/pro_${ii}${jj}.pdb -i ${embd_dir}/toppar/ -o ${embd_dir}/toppar/prot.pdb -p ${embd_dir}/toppar/toppar.top -ignh < ../Utils/ff_wat.dat >> ${LOG}
+	cd ${embd_dir}
+	gmx pdb2gmx -f ./pro_${ii}${jj}.pdb -i ./toppar/ -o ./toppar/prot.pdb -p ./toppar/toppar.top -ignh < ${UTILS}/ff_wat.dat >> ${LOG}
+	cd ${SCRIPTS}
 	unset ii
  	unset jj
 	return ${ACCEPT} 
@@ -142,6 +148,16 @@ build_top () {
 	local jj=${j}
 	pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
 	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args t ${pro} ${ii} ${jj}>> ${LOG}
+	unset ii
+ 	unset jj
+ 	return ${ACCEPT} 
+}
+
+add_ions () {
+	local ii=${i}
+	local jj=${j}
+	pro="${embd_dir}/protein_mem${ii}${jj}"
+	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args i ${pro} ${ii} ${jj}>> ${LOG}
 	unset ii
  	unset jj
  	return ${ACCEPT} 
@@ -190,7 +206,7 @@ echo "" >> ${LOG}
 echo "" >> ${LOG}
 for i in `seq 0 0`;
 do
-	for j in `seq 0 0`;
+	for j in `seq 1 1`;
 	do 
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
@@ -210,14 +226,20 @@ do
 			echo "Error: Did not move the initial pdbs" >> ${Err_Log}
 			exit 1
 		fi
-		gmx_pdb2gmx
-		if [ $? != ${ACCEPT} ]; then
-			echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
-			exit 1
-		fi
+		### gmx_pdb2gmx
+		### if [ $? != ${ACCEPT} ]; then
+		### 	echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
+		### 	exit 1
+		## fi
+		
 		combine_tcl
 		if [ $? != ${ACCEPT} ]; then
 			echo "Error: combine_tcl failed at combining pro_${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
+			exit 1
+		fi
+		add_ions
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: add_ions failed at adding ions to protein_mem${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
 		addCrystal
