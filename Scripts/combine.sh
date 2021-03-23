@@ -204,7 +204,7 @@ ij=$(echo "sqrt($nfiles)-1" | bc)
 echo "Starting Loop" >> ${LOG}
 echo "" >> ${LOG}
 echo "" >> ${LOG}
-for i in `seq 0 0`;
+for i in `seq 1 1`;
 do
 	for j in `seq 1 1`;
 	do 

@@ -32,11 +32,11 @@ proc sel_non_protein {inpt_list z_mid} {
             $sel delete
         } else {
             set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
-            lappend inpt_list "$rsnm\t\t[$sel num]"
+            lappend inpt_list "${rsnm}T\t\t[$sel num]"
             $sel delete
 
             set sel [atomselect top "resname $rsnm and name P and z < ${z_mid}"]
-            lappend inpt_list "$rsnm\t\t[$sel num]"
+            lappend inpt_list "${rsnm}B\t\t[$sel num]"
             $sel delete
         }
     }
@@ -116,6 +116,12 @@ proc writetop {inpt_pdb p1 p2} {
     }
     
     set protein_indx [lsearch -all $itps *PRO*]
+    set memb_sel [atomselect top "lipids"]
+    set memb [lsort -unique [$memb_sel get resname]]
+    set memb [concat $memb $memb]
+    $memb_sel delete
+    set res_list_ordered [concat  TIP3 PROA SOD ZMA CLA]
+
     if {[llength $protein_indx] > 0} {
         foreach pidx ${protein_indx} {
             puts $f "#include \"toppar/[lindex ${itps} ${pidx}]\""
@@ -128,8 +134,23 @@ proc writetop {inpt_pdb p1 p2} {
     
     puts ${f} "\n\n\[ system \]\n; Name\nTitle\n\n"
     puts ${f} "\[ molecules \]\n; Compound\t#mols"
-    foreach res [lsort -dictionary $res_list] {
-        puts $f "${res}"
+
+    set indxs 0
+    set qed "T"
+    foreach mbs ${memb} {
+        if {${indxs} == [expr [llength ${memb}] / 2]} {
+            set qed "B"
+        }
+        set indx [lsearch -index 0 ${res_list} "${mbs}${qed}"]
+        if {${indx}!=-1} {
+             puts ${f} "${mbs}\t[lindex [lindex ${res_list} ${indx}] 1]"
+        }
+        set indxs [expr $indxs + 1]
+    }
+
+    foreach res $res_list_ordered { ;#[lsort -dictionary $res_list]
+        set res_id [lsearch -regexp ${res_list} ${res}] 
+        puts $f "[lindex ${res_list} $res_id]"
     }
     close $f 
     return 0
