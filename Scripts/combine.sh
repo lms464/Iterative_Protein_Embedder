@@ -146,8 +146,9 @@ addCrystal () {
 build_top () {
 	local ii=${i}
 	local jj=${j}
-	pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
-	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args t ${pro} ${ii} ${jj}>> ${LOG}
+	#pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
+	#vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args t ${pro} ${ii} ${jj}>> ${LOG}
+	python ${UTILS}/parse.py ${embd_dir} ${ii} ${jj}
 	unset ii
  	unset jj
  	return ${ACCEPT} 
@@ -204,9 +205,9 @@ ij=$(echo "sqrt($nfiles)-1" | bc)
 echo "Starting Loop" >> ${LOG}
 echo "" >> ${LOG}
 echo "" >> ${LOG}
-for i in `seq 0 0`;
+for i in `seq 2 2`;
 do
-	for j in `seq 0 0`;
+	for j in `seq 2 2`;
 	do 
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
