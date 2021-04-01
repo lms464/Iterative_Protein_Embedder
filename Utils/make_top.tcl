@@ -30,6 +30,16 @@ proc sel_non_protein {inpt_list z_mid} {
             set sel [atomselect top "resname $rsnm"]
             lappend inpt_list "$rsnm\t\t[$sel num]"
             $sel delete
+        } elseif {${rsnm}=="CHL1"} { 
+            puts "${rsnm}"
+            set sel [atomselect top "(resname $rsnm and name C3) and z > ${z_mid}"]
+            lappend inpt_list "${rsnm}T\t\t[$sel num]"
+            puts "${rsnm}\t\t[$sel num]"
+            $sel delete
+
+            set sel [atomselect top "(resname $rsnm and name C3) and z < ${z_mid}"]
+            lappend inpt_list "${rsnm}B\t\t[$sel num]"
+            $sel delete
         } else {
             set sel [atomselect top "resname $rsnm and name P and z > ${z_mid}"]
             lappend inpt_list "${rsnm}T\t\t[$sel num]"
@@ -116,7 +126,7 @@ proc writetop {inpt_pdb p1 p2} {
     }
     
     set protein_indx [lsearch -all $itps *PRO*]
-    set memb_sel [atomselect top "lipids"]
+    set memb_sel [atomselect top "resname CHL1 DPPC LSM NSM OAPE OAPS PAPC PAPS PDPE PLAO PLAS PLPC PLQS POPC POPE PSM SAPI SAPS SOPC"]
     set memb [lsort -unique [$memb_sel get resname]]
     set memb [concat $memb $memb]
     $memb_sel delete

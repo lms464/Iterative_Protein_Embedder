@@ -36,6 +36,10 @@ proc combine {pro_in p1 p2} {
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/top_all36_prot.rtf
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/top_all36_lipid.rtf
     topology /usr/local/lib/vmd/plugins/noarch/tcl/readcharmmtop1.2/toppar_water_ions_namd.str
+    topology /home/liam/toppar/new_lipids.rtf
+    topology /home/liam/toppar/toppar_all36_lipid_miscellaneous.rtf
+    topology /home/liam/toppar/par_ether_lip.prm
+    topology /home/liam/toppar/par_sphingo.prm
     topology /Censere/UDel/ZM_inputs/ZM-wH-for-psfgen-NEW.rtf
     ;#top_all27_prot_lipid.inp
 
@@ -65,7 +69,7 @@ proc combine {pro_in p1 p2} {
     # select and delete lipids that overlap protein:
     # any atom to any atom distance under 0.8A
     # (alternative: heavy atom to heavy atom distance under 1.3A)
-    set sellip [atomselect top "lipids or water"]
+    set sellip [atomselect top "resname CHL1 CLA DPPC LSM NSM OAPE OAPS PAPC PAPS PDPE PLAO PLAS PLPC PLQS POPC POPE PSM SAPI SAPS SOD SOPC TIP3"]
     set lseglist [lsort -unique [$sellip get segid]]
     foreach lseg $lseglist {
       # find lipid backbone atoms

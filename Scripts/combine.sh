@@ -204,9 +204,9 @@ ij=$(echo "sqrt($nfiles)-1" | bc)
 echo "Starting Loop" >> ${LOG}
 echo "" >> ${LOG}
 echo "" >> ${LOG}
-for i in `seq 1 1`;
+for i in `seq 0 0`;
 do
-	for j in `seq 1 1`;
+	for j in `seq 0 0`;
 	do 
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
