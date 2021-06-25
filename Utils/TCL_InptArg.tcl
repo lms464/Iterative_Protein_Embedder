@@ -9,12 +9,14 @@ if { $argc < 2 } {
 	if { [lindex ${argv} 0] == "c" } {
 		source ${UTILS}/combine.tcl
 		puts "Combine Prot and Memb"
+		puts "[lindex ${argv} 1] [lindex $argv 2] [lindex $argv 3]"
+		return 0
 		set fin [combine [lindex ${argv} 1] [lindex $argv 2] [lindex $argv 3]]
 
-	} elseif { [lindex ${argv} 0] == "t"} {
-		source ${UTILS}/make_top.tcl
-		puts "Build .top file"
-		set fin [writetop [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
+	# } elseif { [lindex ${argv} 0] == "t"} {
+	# 	source ${UTILS}/make_top.tcl
+	# 	puts "Build .top file"
+	# 	set fin [writetop [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
 	} elseif { [lindex ${argv} 0] == "i" } {
 		source ${UTILS}/ionize.tcl
 		set fin [call_autoionize [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]

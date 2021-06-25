@@ -106,6 +106,9 @@ set yi [expr $y_min + 2.0 * $bin_size]
 
 set i 0
 set j 0
+
+;### 6/24 UPDATE ME TO FIT THE NEW ALIGNED NAMING
+
 load_structure "${path_def}/protein_aligned.pdb"
 puts "Loaded protein file."
 ;#puts "Checking Z axis alignment"

@@ -14,7 +14,7 @@ proc minmax {molid} {
   return [list [list $minx $miny $minz] [list $maxx $maxy $maxz]]
 }
 
-proc combine {pro_in p1 p2} {
+proc combine {pro_in {p1 "None"} {p2 "None"} {act "NONE"}} {
 
     #!/usr/local/bin/vmd -dispdev text
 
@@ -30,6 +30,12 @@ proc combine {pro_in p1 p2} {
     #echo on
 
     # need psfgen module and topology
+
+    if {${act} ==  "NONE"} {
+        puts "It looks like you've not updated how you grab a protein!"
+        puts "LIAM FIX THIS OR IT WON'T WORK"
+        exit
+    }
 
     set path_def "" 
 
@@ -55,6 +61,8 @@ proc combine {pro_in p1 p2} {
     topology /home/liam/toppar/toppar_all36_lipid_miscellaneous.rtf
     topology /home/liam/toppar/par_ether_lip.prm
     topology /home/liam/toppar/par_sphingo.prm
+    topology /home/liam/toppar/gdp.rtf
+    topology /home/liam/toppar/nec.rtf
     topology /Censere/UDel/ZM_inputs/ZM-wH-for-psfgen-NEW.rtf
     ;#top_all27_prot_lipid.inp
 
@@ -64,8 +72,10 @@ proc combine {pro_in p1 p2} {
     readpsf ${path_def}/membrane.psf
     coordpdb ${path_def}/membrane.pdb
 
-    readpsf ${path_def}/protein.psf
-    coordpdb $pro_in
+
+
+    readpsf ${path_def}/${act}_protein.psf
+    coordpdb ${path_def}/${act}_protein_aligned.pdb
 
     # can delete some protein segments; list them in brackets on next line
     set pseg2del   { }
@@ -124,9 +134,9 @@ proc combine {pro_in p1 p2} {
     }
 
     # write full structure
-    writepsf ${path_def}/protein_mem${p1}${p2}.psf
+    writepsf protein_mem${p1}${p2}.psf
     ;#if {[file exists ${path_def}/membrane.psf ] == 0} {exit 0}
-    writepdb ${path_def}/protein_mem${p1}${p2}.pdb
+    writepdb protein_mem${p1}${p2}.pdb
     ;#if {[file exists ${path_def}/membrane.pdb ] == 0} {exit 0}
     # clean up
     file delete $temp.psf

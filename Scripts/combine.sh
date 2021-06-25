@@ -85,7 +85,7 @@ bin_memb_build_prot () {
 	# predict number of bins
 	# write pdb's of prot for each bin
 
-	vmd -dispdev text -e Membrane_Binner.tcl >> ${LOG}
+	vmd -dispdev text -e Membrane_Binner.tcl -args>> ${LOG}
 	return ${ACCEPT}
 }
 
@@ -98,10 +98,10 @@ combine_tcl () {
 	local jj=${j}
 	if [ "${ii}" = "None" ] || [ "${jj}" = "None" ]
 	then
-		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${path_def}/protein_aligned.pdb ${ii} ${jj} >> ${LOG}
+		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${ii} ${jj} ${act} >> ${LOG}
 	else
 		pro=${embd_dir}/pro_${ii}${jj}.pdb
-		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${pro} ${ii} ${jj} >> ${LOG}
+		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${ii} ${jj} ${act} >> ${LOG}
  	fi
  	unset ii
  	unset jj
@@ -169,6 +169,14 @@ add_ions () {
 
 ## This block should initialize
 ## The reference combied memb-prot
+state=$1
+
+if [[ ${state} == "IN" ]]; then
+	init_prot="IN_protein_aligned.pdb"
+eles
+	init_prot="AC_protein_aligned.pdb"
+fi
+
 i="None"
 j="None"
 
@@ -205,10 +213,11 @@ ij=$(echo "sqrt($nfiles)-1" | bc)
 echo "Starting Loop" >> ${LOG}
 echo "" >> ${LOG}
 echo "" >> ${LOG}
-for i in `seq 0 ${nfiles}`;
+for i in `seq 0 ${ij}`;
 do
-	for j in `seq 0 ${nfiles}`;
+	for j in `seq 0 ${ij}`;
 	do 
+		echo "Building iteration ${i} ${j}"
 		embd_dir="${path}/prot_memb_${i}${j}"
 		
 		make_embedded_folder 
