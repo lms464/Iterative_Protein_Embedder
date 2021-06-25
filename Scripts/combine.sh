@@ -9,6 +9,28 @@
 
 ## global variables ####
 
+## activation state IN or AC 
+act=$1
+
+if [ -z ${act} ] ; then
+	echo "No activation state has been declared."
+	echo "please declare:"
+	echo ""
+	echo "    AC (Active)"
+	echo "    IN (Inactive)"
+	echo ""
+	read -p "Please choose a state" act
+
+	if [ -z ${act} ] ; then
+		echo ""
+		echo "Really? REALLY? No input? Exiting"
+		echo ""
+		exit 0
+	fi 
+
+fi
+
+
 ## I did not know bash returned 0 if it passes!
 ## Accept and error are changed to reflect that
 ACCEPT=0
@@ -85,7 +107,7 @@ bin_memb_build_prot () {
 	# predict number of bins
 	# write pdb's of prot for each bin
 
-	vmd -dispdev text -e Membrane_Binner.tcl -args>> ${LOG}
+	vmd -dispdev text -e Membrane_Binner.tcl -args ${act} >> ${LOG}
 	return ${ACCEPT}
 }
 
@@ -169,11 +191,12 @@ add_ions () {
 
 ## This block should initialize
 ## The reference combied memb-prot
-state=$1
 
-if [[ ${state} == "IN" ]]; then
+if [[ ${act} == "IN" ]]; 
+then
 	init_prot="IN_protein_aligned.pdb"
-eles
+elif [[ ${act} == "AC" ]];
+then
 	init_prot="AC_protein_aligned.pdb"
 fi
 
@@ -213,12 +236,13 @@ ij=$(echo "sqrt($nfiles)-1" | bc)
 echo "Starting Loop" >> ${LOG}
 echo "" >> ${LOG}
 echo "" >> ${LOG}
-for i in `seq 0 ${ij}`;
+for i in `seq 0 0` #${ij}`;
 do
-	for j in `seq 0 ${ij}`;
+	for j in `seq 0 0` #${ij}`;
 	do 
 		echo "Building iteration ${i} ${j}"
 		embd_dir="${path}/prot_memb_${i}${j}"
+		echo "${embd_dir}"
 		
 		make_embedded_folder 
 		if [ $? != ${ACCEPT} ]; then
@@ -252,18 +276,18 @@ do
 			echo "Error: add_ions failed at adding ions to protein_mem${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
-		addCrystal
-		#TODO move a addCrystal.py to each file.. might need to cd into the file
-		if [ $? != ${ACCEPT} ]; then
-			echo "Error: addCrystal failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
-			exit 1
-		fi
-		build_top
-		if [ $? != ${ACCEPT} ]; then
-			echo "Error: build_top failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
-			exit 1
-		fi
-		get_mdb
+		# addCrystal
+		# #TODO move a addCrystal.py to each file.. might need to cd into the file
+		# if [ $? != ${ACCEPT} ]; then
+		# 	echo "Error: addCrystal failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+		# 	exit 1
+		# fi
+		# build_top
+		# if [ $? != ${ACCEPT} ]; then
+		# 	echo "Error: build_top failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+		# 	exit 1
+		# fi
+		# get_mdb
 
 	done
 done

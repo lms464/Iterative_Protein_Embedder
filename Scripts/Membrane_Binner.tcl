@@ -68,6 +68,17 @@ proc get_pro_area {A A_adj} {
 	return [list $A_bin $bin_size $num_bin]
 }
 
+if {[llength ${argv}] == 0} {
+	puts "\nNeed an argument for protein state\n"
+	puts "\tIN (inactive)"
+	puts "\tAC (active)\n"
+	exit
+}
+
+set act [lindex ${argv} 0]
+
+puts ${act}
+
 set path_def "/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
 set path_pdb  "/home/liam/Censere/github/Iterative_Protein_Embedder/test/pdb_files"
 # Reference Memb
@@ -85,7 +96,7 @@ set A [lindex $area_list 0]
 set A_lip [lindex $area_list 1]
 
 # Memb with Protein
-load_structure "${path_def}/protein_mem.pdb"
+load_structure "${path_def}/${act}_protein_mem.pdb"
 puts "Loaded initial protein in membrane file"
 
 set A_adj [get_memb_adjst_area "CHL1 CLA DPPC LSM NSM OAPE OAPS PAPC PAPS PDPE PLAO PLAS PLPC PLQS POPC POPE PSM SAPI SAPS SOPC" $A_lip]
@@ -109,7 +120,7 @@ set j 0
 
 ;### 6/24 UPDATE ME TO FIT THE NEW ALIGNED NAMING
 
-load_structure "${path_def}/protein_aligned.pdb"
+load_structure "${path_def}/${act}_protein_aligned.pdb"
 puts "Loaded protein file."
 ;#puts "Checking Z axis alignment"
 ;#align_prot_memb
@@ -125,10 +136,13 @@ while {$xi < [expr $x_max - (2.0 * $bin_size)] } {
 		}
 
 		$pro moveby [list $xi $yi 0]
-		$pro writepdb "${path_pdb}/pro_${i}${j}.pdb"
+		$pro writepdb "${path_pdb}/${act}_pro_${i}${j}.pdb"
+
 		set xin [expr -1.0*$xi]
 		set yin [expr -1.0*$yi]
+		
 		$pro moveby [list $xin $yin 0]
+		
 		set yi [expr $yi + 1.0*int($bin_size)]
 		incr j
 

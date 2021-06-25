@@ -14,8 +14,9 @@ proc minmax {molid} {
   return [list [list $minx $miny $minz] [list $maxx $maxy $maxz]]
 }
 
-proc combine {pro_in {p1 "None"} {p2 "None"} {act "NONE"}} {
+proc combine {{p1 "None"} {p2 "None"} {act "NONE"}} {
 
+    puts "${p1} ${p2}"
     #!/usr/local/bin/vmd -dispdev text
 
     ## embed (parts of) protein into a membrane
@@ -31,11 +32,11 @@ proc combine {pro_in {p1 "None"} {p2 "None"} {act "NONE"}} {
 
     # need psfgen module and topology
 
-    if {${act} ==  "NONE"} {
-        puts "It looks like you've not updated how you grab a protein!"
-        puts "LIAM FIX THIS OR IT WON'T WORK"
-        exit
-    }
+    # if {${act} ==  "NONE"} {
+    #     puts "It looks like you've not updated how you grab a protein!"
+    #     puts "LIAM FIX THIS OR IT WON'T WORK"
+    #     exit
+    # }
 
     set path_def "" 
 
@@ -73,9 +74,13 @@ proc combine {pro_in {p1 "None"} {p2 "None"} {act "NONE"}} {
     coordpdb ${path_def}/membrane.pdb
 
 
-
-    readpsf ${path_def}/${act}_protein.psf
-    coordpdb ${path_def}/${act}_protein_aligned.pdb
+    if {${p1} == "" || ${p2} == ""} {
+      readpsf ${path_def}/${act}_protein.psf
+      coordpdb ${path_def}/${act}_protein_aligned.pdb
+    } else {
+        readpsf ${path_def}/${act}_protein.psf
+        coordpdb ${path_def}/${act}_pro_${p1}${p2}.pdb
+    }
 
     # can delete some protein segments; list them in brackets on next line
     set pseg2del   { }
@@ -134,9 +139,9 @@ proc combine {pro_in {p1 "None"} {p2 "None"} {act "NONE"}} {
     }
 
     # write full structure
-    writepsf protein_mem${p1}${p2}.psf
+    writepsf ${path_def}/${act}_protein_mem${p1}${p2}.psf
     ;#if {[file exists ${path_def}/membrane.psf ] == 0} {exit 0}
-    writepdb protein_mem${p1}${p2}.pdb
+    writepdb ${path_def}/${act}_protein_mem${p1}${p2}.pdb
     ;#if {[file exists ${path_def}/membrane.pdb ] == 0} {exit 0}
     # clean up
     file delete $temp.psf
