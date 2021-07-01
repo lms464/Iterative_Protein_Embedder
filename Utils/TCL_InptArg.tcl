@@ -21,7 +21,7 @@ if { $argc < 2 } {
 	# 	set fin [writetop [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
 	} elseif { [lindex ${argv} 0] == "i" } {
 		source ${UTILS}/ionize.tcl
-		set fin [call_autoionize [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3]]
+		set fin [call_autoionize [lindex ${argv} 1] [lindex ${argv} 2] [lindex ${argv} 3] [lindex ${argv} 4]]
 
 	} 
 
@@ -29,7 +29,7 @@ if { $argc < 2 } {
     #set fin [write_pdb [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
     #set fin [combine [lindex ${argv} 0] [lindex $argv 1] [lindex $argv 2]]
 }
-puts ${fin}
+
 if {${fin} == 0} {
 	exit 0
 } else {

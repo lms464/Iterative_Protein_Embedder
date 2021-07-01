@@ -73,13 +73,12 @@ proc combine {{p1 "None"} {p2 "None"} {act "NONE"}} {
     readpsf ${path_def}/membrane.psf
     coordpdb ${path_def}/membrane.pdb
 
-
     if {${p1} == "" || ${p2} == ""} {
       readpsf ${path_def}/${act}_protein.psf
       coordpdb ${path_def}/${act}_protein_aligned.pdb
     } else {
         readpsf ${path_def}/${act}_protein.psf
-        coordpdb ${path_def}/${act}_pro_${p1}${p2}.pdb
+        coordpdb /Censere/github/Iterative_Protein_Embedder/test/prot_memb_${p1}${p2}/${act}_pro_${p1}${p2}.pdb
     }
 
     # can delete some protein segments; list them in brackets on next line

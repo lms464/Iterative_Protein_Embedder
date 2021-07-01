@@ -19,7 +19,7 @@ if [ -z ${act} ] ; then
 	echo "    AC (Active)"
 	echo "    IN (Inactive)"
 	echo ""
-	read -p "Please choose a state" act
+	read -p "Please choose a state  " act
 
 	if [ -z ${act} ] ; then
 		echo ""
@@ -95,7 +95,7 @@ get_default_pdbs () {
 	local ii=${i}
 	local jj=${j}
 	cp -r ${path_def} ${embd_dir} >> ${LOG} 
-	cp ${path_pdb}/pro_${ii}${jj}.pdb ${embd_dir} >> ${LOG}
+	cp ${path_pdb}/${act}_pro_${ii}${jj}.pdb ${embd_dir} >> ${LOG}
 	unset ii
 	unset jj
 }
@@ -122,8 +122,8 @@ combine_tcl () {
 	then
 		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${ii} ${jj} ${act} >> ${LOG}
 	else
-		pro=${embd_dir}/pro_${ii}${jj}.pdb
-		vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${ii} ${jj} ${act} >> ${LOG}
+		pro=${embd_dir}/${act}_pro_${ii}${jj}.pdb
+		vmd  -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args c ${ii} ${jj} ${act} >> ${LOG}
  	fi
  	unset ii
  	unset jj
@@ -137,9 +137,9 @@ gmx_pdb2gmx () {
 
 	local ii=${i}
 	local jj=${j}
-	cp ${path_pdb}/pro_${ii}${jj}.pdb ${embd_dir}
+	cp ${path_pdb}/${act}_pro_${ii}${jj}.pdb ${embd_dir}
 	cd ${embd_dir}
-	gmx pdb2gmx -f ./pro_${ii}${jj}.pdb -i ./toppar/ -o ./toppar/prot.pdb -p ./toppar/toppar.top -ignh < ${UTILS}/ff_wat.dat >> ${LOG}
+	gmx pdb2gmx -f ./${act}_pro_${ii}${jj}.pdb -i ./toppar/ -o ./toppar/prot.pdb -p ./toppar/toppar.top -ignh < ${UTILS}/ff_wat.dat >> ${LOG}
 	cd ${SCRIPTS}
 	unset ii
  	unset jj
@@ -154,7 +154,7 @@ addCrystal () {
 	local jj=${j}
 	#cp ${UTILS}/addCrystPdb.py ${embd_dir}
 	#cd ${embd_dir}
-	pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
+	pro="${embd_dir}/${act}_protein_mem${ii}${jj}_ion.pdb"
 	python ${UTILS}/addCrystPdb.py -i ${pro} -cryst ${embd_dir}/def/input.config.dat >> ${LOG}
 	#cd ${SCRIPTS}
 	# Ohhhgod right this
@@ -170,7 +170,7 @@ build_top () {
 	local jj=${j}
 	#pro="${embd_dir}/protein_mem${ii}${jj}.pdb"
 	#vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args t ${pro} ${ii} ${jj}>> ${LOG}
-	python ${UTILS}/parse.py ${embd_dir} ${ii} ${jj}
+	python ${UTILS}/parse.py ${embd_dir} ${ii} ${jj} ${act}
 	unset ii
  	unset jj
  	return ${ACCEPT} 
@@ -179,8 +179,8 @@ build_top () {
 add_ions () {
 	local ii=${i}
 	local jj=${j}
-	pro="${embd_dir}/protein_mem${ii}${jj}"
-	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args i ${pro} ${ii} ${jj}>> ${LOG}
+	pro="${embd_dir}/${act}_protein_mem${ii}${jj}"
+	vmd -dispdev text -e ${UTILS}/TCL_InptArg.tcl -args i ${pro} ${ii} ${jj} ${act}>> ${LOG}
 	unset ii
  	unset jj
  	return ${ACCEPT} 
@@ -203,28 +203,28 @@ fi
 i="None"
 j="None"
 
-echo "Initializing files" >> ${LOG}
-echo "Constructing reference combined protein membrane pdb and psf" >> ${LOG}
-echo "" >> ${LOG}
-echo "" >> ${LOG}
-echo "" >> ${LOG}
+# echo "Initializing files" >> ${LOG}
+# echo "Constructing reference combined protein membrane pdb and psf" >> ${LOG}
+# echo "" >> ${LOG}
+# echo "" >> ${LOG}
+# echo "" >> ${LOG}
 
-combine_tcl
-if [ $? != ${ACCEPT} ]; then
-	echo "Could not merge initial protein and membrane. Exiting" >> ${Err_Log}
-	exit 1
-fi
+# combine_tcl
+# if [ $? != ${ACCEPT} ]; then
+# 	echo "Could not merge initial protein and membrane. Exiting" >> ${Err_Log}
+# 	exit 1
+# fi
 
-echo "Predicting number of membranes and building moved proteins" >> ${LOG}
-echo "" >> ${LOG}
-echo "" >> ${LOG}
-echo "" >> ${LOG}
+# echo "Predicting number of membranes and building moved proteins" >> ${LOG}
+# echo "" >> ${LOG}
+# echo "" >> ${LOG}
+# echo "" >> ${LOG}
 
-bin_memb_build_prot
-if [ $? != ${ACCEPT} ]; then
-	echo "Could not bin membrane. Exiting" >> ${Err_Log}
-	exit 1
-fi
+# bin_memb_build_prot
+# if [ $? != ${ACCEPT} ]; then
+# 	echo "Could not bin membrane. Exiting" >> ${Err_Log}
+# 	exit 1
+# fi
 
 ## Determine the number of protein
 ## placemnt pdbs to iterate through
@@ -238,7 +238,7 @@ echo "" >> ${LOG}
 echo "" >> ${LOG}
 for i in `seq 0 0` #${ij}`;
 do
-	for j in `seq 0 0` #${ij}`;
+	for j in `seq 1 1` #${ij}`;
 	do 
 		echo "Building iteration ${i} ${j}"
 		embd_dir="${path}/prot_memb_${i}${j}"
@@ -260,11 +260,11 @@ do
 			echo "Error: Did not move the initial pdbs" >> ${Err_Log}
 			exit 1
 		fi
-		### gmx_pdb2gmx
-		### if [ $? != ${ACCEPT} ]; then
-		### 	echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
-		### 	exit 1
-		## fi
+		# ### gmx_pdb2gmx
+		# ### if [ $? != ${ACCEPT} ]; then
+		# ### 	echo "Error: gmx_pdb2gmx failed at pro_${i}${j}.pdb" >> ${Err_Log}
+		# ### 	exit 1
+		# ## fi
 		
 		combine_tcl
 		if [ $? != ${ACCEPT} ]; then
@@ -276,18 +276,18 @@ do
 			echo "Error: add_ions failed at adding ions to protein_mem${i}${j}.pdb and membrane.pdb" >> ${Err_Log}
 			exit 1
 		fi
-		# addCrystal
-		# #TODO move a addCrystal.py to each file.. might need to cd into the file
-		# if [ $? != ${ACCEPT} ]; then
-		# 	echo "Error: addCrystal failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
-		# 	exit 1
-		# fi
-		# build_top
-		# if [ $? != ${ACCEPT} ]; then
-		# 	echo "Error: build_top failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
-		# 	exit 1
-		# fi
-		# get_mdb
+		addCrystal
+		#TODO move a addCrystal.py to each file.. might need to cd into the file
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: addCrystal failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+			exit 1
+		fi
+		build_top
+		if [ $? != ${ACCEPT} ]; then
+			echo "Error: build_top failed at protein_mem${i}${j}.pdb" >> ${Err_Log}
+			exit 1
+		fi
+		get_mdb
 
 	done
 done

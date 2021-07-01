@@ -81,6 +81,7 @@ puts ${act}
 
 set path_def "/home/liam/Censere/github/Iterative_Protein_Embedder/test/def"
 set path_pdb  "/home/liam/Censere/github/Iterative_Protein_Embedder/test/pdb_files"
+
 # Reference Memb
 load_structure "${path_def}/membrane.pdb"
 puts "Loaded membrane file"
