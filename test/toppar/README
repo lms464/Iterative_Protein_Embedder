@@ -1,0 +1,8 @@
+CLA -> anionic ion
+SOD -> cationic ion
+forcefield -> calls nonbonded and boded as well as cmap and gb
+TIP3 -> water
+HETB -> ZMA
+
+For each build a protein file should be built (consider both active and inactive)
+For each build consider the lipids you'll use
