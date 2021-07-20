@@ -1,0 +1,2 @@
+membrane -> pdb and psf for a membrane file to be used in combine
+protein -> aligned.pdb and psf are used with the membrane in the combine script
